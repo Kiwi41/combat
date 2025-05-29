@@ -4,25 +4,34 @@ import random         # Importe le module random pour générer des nombres alé
 class CombatGame:
     def __init__(self, root):
         self.root = root
-        self.root.title("Jeu de Combat Simple")  # Titre de la fenêtre
+        self.root.title("Jeu de Combat Simple")
 
-        self.player_hp = 100   # Points de vie du joueur
-        self.enemy_hp = 100    # Points de vie de l'ennemi
+        self.player_hp = 100
+        self.enemy_hp = 100
 
-        self.info = tk.Label(root, text="Bienvenue dans le jeu de combat !")  # Message d'accueil
+        self.info = tk.Label(root, text="Bienvenue dans le jeu de combat !")
         self.info.pack()
 
-        self.status = tk.Label(root, text=self.get_status())  # Affiche les PV actuels
+        self.status = tk.Label(root, text=self.get_status())
         self.status.pack()
 
-        self.attack_btn = tk.Button(root, text="Attaquer", command=self.attack)  # Bouton Attaquer
+        # Ajout d'un canvas pour dessiner le bonhomme
+        self.canvas = tk.Canvas(root, width=200, height=200, bg="white")
+        self.canvas.pack(pady=10)
+        self.bonhomme = self.draw_bonhomme(50, 150)  # Position initiale
+
+        self.attack_btn = tk.Button(root, text="Attaquer", command=self.attack)
         self.attack_btn.pack(pady=5)
 
-        self.heal_btn = tk.Button(root, text="Soigner", command=self.heal)       # Bouton Soigner
+        self.heal_btn = tk.Button(root, text="Soigner", command=self.heal)
         self.heal_btn.pack(pady=5)
 
-        self.quit_btn = tk.Button(root, text="Quitter", command=root.quit)       # Bouton Quitter
+        self.quit_btn = tk.Button(root, text="Quitter", command=root.quit)
         self.quit_btn.pack(pady=5)
+
+        # Lance l'animation
+        self.direction = 1
+        self.animate_bonhomme()
 
     def get_status(self):
         # Retourne une chaîne affichant les PV du joueur et de l'ennemi
@@ -72,7 +81,27 @@ class CombatGame:
         self.attack_btn.config(state=tk.DISABLED)  # Désactive le bouton Attaquer
         self.heal_btn.config(state=tk.DISABLED)    # Désactive le bouton Soigner
 
+    def draw_bonhomme(self, x, y):
+        # Dessine un bonhomme bâton à la position (x, y)
+        head = self.canvas.create_oval(x-10, y-40, x+10, y-20, fill="black")
+        body = self.canvas.create_line(x, y-20, x, y+20, width=2)
+        left_arm = self.canvas.create_line(x, y, x-20, y-10, width=2)
+        right_arm = self.canvas.create_line(x, y, x+20, y-10, width=2)
+        left_leg = self.canvas.create_line(x, y+20, x-15, y+40, width=2)
+        right_leg = self.canvas.create_line(x, y+20, x+15, y+40, width=2)
+        return [head, body, left_arm, right_arm, left_leg, right_leg]
+
+    def animate_bonhomme(self):
+        # Fait bouger le bonhomme de gauche à droite
+        for part in self.bonhomme:
+            self.canvas.move(part, self.direction, 0)
+        pos = self.canvas.coords(self.bonhomme[0])
+        if pos[0] <= 10 or pos[2] >= 190:
+            self.direction *= -1
+        self.root.after(30, self.animate_bonhomme)
+
 if __name__ == "__main__":
     root = tk.Tk()              # Crée la fenêtre principale
     game = CombatGame(root)     # Instancie le jeu
     root.mainloop()             # Lance la boucle principale de l'interface
+
